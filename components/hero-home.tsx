@@ -63,6 +63,18 @@ export default function HeroHome() {
                     Your browser does not support iframes.
                   </iframe>
                 </div>
+
+              <div style={{ marginTop: "2rem", textAlign: "center" }}>
+                <h2>Try the App</h2>
+                <a
+                  href="https://sunajeb.streamlit.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn group bg-indigo-600 text-white py-2 px-4 rounded"
+                >
+                  Open the App
+                </a>
+              </div>
           </div>
 
           <ModalVideo
