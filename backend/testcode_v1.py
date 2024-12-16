@@ -21,12 +21,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
 
-
 def extract_json(text):
-    """
-    Extract JSON from text using regex and parsing
-    Handles various JSON formatting issues
-    """
+    """Extract JSON from text using regex and parsing"""
     text = text.replace('```json', '').replace('```', '').strip()
     try:
         return json.loads(text)
@@ -42,21 +38,21 @@ def extract_json(text):
     return [
         {
             "title": "Guide Generation Failed",
-            "description": "Could not generate a guide for the specified location",
-            "content": "Please try again or check your input."
+            "content": "Could not generate a guide for the specified location. Please try again."
         }
     ]
 
 def generate_monument_guide(location, duration, topic_focus, language):
     """Generate monument guide using Gemini API"""
     model = genai.GenerativeModel('gemini-pro')
+    
+    # Average reading speed is about 150 words per minute
     duration_mapping = {
-        "Synopsis": "a brief 10-30 second overview",
-        "Story": "a 30 second to 2 minute narrative",
-        "Long": "a comprehensive 2-5 minute explanation"
+        "Synopsis": {"time": "a brief 10-30 second overview", "words": "25-75 words"},
+        "Story": {"time": "a 30 second to 2 minute narrative", "words": "75-300 words"},
+        "Long": {"time": "a comprehensive 2-5 minute explanation", "words": "300-750 words"}
     }
 
-    # Create specific prompts for each topic focus
     topic_prompts = {
         "History": f"Create a chronological historical guide focusing on key events, dates, and historical significance",
         "Fun Facts": f"Share genuinely entertaining and humorous facts. Each segment should be a standalone fun fact that would make someone laugh or say 'wow, that's cool!' Include unusual anecdotes, quirky incidents, or amusing stories. Avoid generic descriptions.",
@@ -65,15 +61,14 @@ def generate_monument_guide(location, duration, topic_focus, language):
     }
 
     language_prompt = f"Respond in {language}. "
-    prompt = f"""{language_prompt}Create a {duration_mapping[duration]} guide for {location}, \
-    {topic_prompts[topic_focus]}. \
+    prompt = f"""{language_prompt}Create a {duration_mapping[duration]['time']} guide for {location}, \
+    {topic_prompts[topic_focus]}. The content should be {duration_mapping[duration]['words']} to match the intended duration. \
     Respond EXACTLY in this JSON format:\n    [\n      {{\n        "title": "Segment Title",
-        "description": "Short description of the segment",
-        "content": "Detailed paragraph about this aspect of the monument"
+        "content": "Detailed content about this aspect"
       }}
     ]\n    IMPORTANT: 
     1. Ensure valid JSON with proper escaping
-    2. Maintain the specified duration in the content
+    2. Maintain the specified word count in the content to match the duration
     3. For Fun Facts and Surprising Facts, each segment MUST be a standalone fact (not a description)
     4. The first segment should NOT be a general description but should directly address the chosen topic focus
     5. Make sure each fact is genuinely entertaining or surprising, not just informative"""
@@ -86,11 +81,11 @@ def generate_monument_guide(location, duration, topic_focus, language):
         return [
             {
                 "title": "Error",
-                "description": "Could not generate monument guide",
                 "content": str(e)
             }
         ]
 
+# Update the generate_audio function
 def generate_audio(text, language_code='en-US', voice_name='en-US-Wavenet-D'):
     """Generate audio from text using Google's Gemini 2.0 TTS."""
     try:
@@ -101,7 +96,7 @@ def generate_audio(text, language_code='en-US', voice_name='en-US-Wavenet-D'):
         }
         
         # Generate the audio content
-        response = genai.generate(
+        response = genai.generate_text(
             prompt=text,
             model='models/gemini-2.0-flash',
             output_modality='AUDIO',
@@ -109,7 +104,7 @@ def generate_audio(text, language_code='en-US', voice_name='en-US-Wavenet-D'):
         )
         
         # Extract the audio content from the response
-        audio_content = response.audio_content
+        audio_content = response.result.audio
         
         return audio_content
     except Exception as e:
@@ -202,7 +197,6 @@ def main():
             st.warning("Please enter a monument location")
             return
 
-        # Use the mapping to get the correct duration type
         duration_type = duration_options[duration]
 
         with st.spinner('Generating monument guide...'):
@@ -210,14 +204,13 @@ def main():
 
         if guides:
             for i, guide in enumerate(guides, 1):
-                with st.expander(f"Segment {i}: {guide.get('title', 'Untitled')}"):
-                    st.markdown(f"**Description:** {guide.get('description', 'No description')}")
-                    st.markdown(f"**Content:** {guide.get('content', 'No content')}\n")
+                with st.expander(f"Segment {i}"):
+                    st.markdown(f"<div class='segment-title'>{guide.get('title', 'Untitled')}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='segment-content'>{guide.get('content', 'No content')}</div>", unsafe_allow_html=True)
 
                     try:
-                        audio_text = f"{guide.get('title')}. {guide.get('description')}. {guide.get('content')}"
+                        audio_text = f"{guide.get('title')}. {guide.get('content')}"
                         audio_bytes = generate_audio(audio_text, language)
-                        st.markdown("**\U0001F50A Listen to Audio Guide:**")
                         st.markdown(create_audio_player(audio_bytes), unsafe_allow_html=True)
                     except Exception as e:
                         st.error(f"Error generating audio: {str(e)}")
