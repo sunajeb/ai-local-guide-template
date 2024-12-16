@@ -91,22 +91,46 @@ def generate_monument_guide(location, duration, topic_focus, language):
             }
         ]
 
-def generate_audio(text, language):
-    """Generate audio from text using OpenAI TTS"""
+def generate_audio(text, language_code='en-US', voice_name='en-US-Wavenet-D'):
+    """Generate audio from text using Google's Gemini 2.0 TTS."""
     try:
-        response = client.audio.speech.create(
-            model="tts-1",
-            voice="alloy",
-            input=text
+        # Define the audio configuration
+        audio_config = {
+            'voice': voice_name,
+            'language_code': language_code
+        }
+        
+        # Generate the audio content
+        response = genai.generate(
+            prompt=text,
+            model='models/gemini-2.0-flash',
+            output_modality='AUDIO',
+            audio_config=audio_config
         )
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as tmp_file:
-            response.stream_to_file(tmp_file.name)
-            with open(tmp_file.name, 'rb') as audio_file:
-                audio_bytes = audio_file.read()
-            os.unlink(tmp_file.name)
-            return audio_bytes
+        
+        # Extract the audio content from the response
+        audio_content = response.audio_content
+        
+        return audio_content
     except Exception as e:
         raise Exception(f"Error generating audio: {str(e)}")
+
+# def generate_audio(text, language):
+#     """Generate audio from text using OpenAI TTS"""
+#     try:
+#         response = client.audio.speech.create(
+#             model="tts-1",
+#             voice="alloy",
+#             input=text
+#         )
+#         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as tmp_file:
+#             response.stream_to_file(tmp_file.name)
+#             with open(tmp_file.name, 'rb') as audio_file:
+#                 audio_bytes = audio_file.read()
+#             os.unlink(tmp_file.name)
+#             return audio_bytes
+#     except Exception as e:
+#         raise Exception(f"Error generating audio: {str(e)}")
 
 def create_audio_player(audio_bytes):
     """Create an HTML audio player with the audio bytes"""
