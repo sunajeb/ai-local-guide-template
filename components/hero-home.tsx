@@ -48,6 +48,21 @@ export default function HeroHome() {
                 </div>
               </div>
             </div>
+
+                <section style={{ marginTop: "2rem" }}>
+                  <h2>Try the App</h2>
+                  <iframe
+                    src="https://sunajeb.streamlit.app/"
+                    width="100%"
+                    height="600px"
+                    style={{
+                      border: "none",
+                      overflow: "hidden",
+                    }}
+                  >
+                    Your browser does not support iframes.
+                  </iframe>
+                </section>
           </div>
 
           <ModalVideo
