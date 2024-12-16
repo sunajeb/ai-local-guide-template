@@ -53,16 +53,31 @@ def generate_monument_guide(location, duration, topic_focus, language):
     duration_mapping = {
         "Synopsis": "a brief 10-30 second overview",
         "Story": "a 30 second to 2 minute narrative",
-        "Long Story": "a comprehensive 2-5 minute explanation"
+        "Long": "a comprehensive 2-5 minute explanation"
     }
+
+    # Create specific prompts for each topic focus
+    topic_prompts = {
+        "History": f"Create a chronological historical guide focusing on key events, dates, and historical significance",
+        "Fun Facts": f"Share genuinely entertaining and humorous facts. Each segment should be a standalone fun fact that would make someone laugh or say 'wow, that's cool!' Include unusual anecdotes, quirky incidents, or amusing stories. Avoid generic descriptions.",
+        "Surprising Facts": f"Share truly shocking or unexpected facts that most people don't know. Each segment should be a standalone revelation that would make someone say 'I can't believe that!' Focus on counterintuitive information, hidden secrets, or mind-blowing statistics. Avoid basic historical facts or common knowledge.",
+        "Architecture": f"Provide detailed architectural insights focusing on design elements, construction techniques, and unique structural features"
+    }
+
     language_prompt = f"Respond in {language}. "
-    prompt = f"""{language_prompt}Create a {duration_mapping[duration]} guide for {location} monument, \
-    focusing primarily on {topic_focus}. \
+    prompt = f"""{language_prompt}Create a {duration_mapping[duration]} guide for {location}, \
+    {topic_prompts[topic_focus]}. \
     Respond EXACTLY in this JSON format:\n    [\n      {{\n        "title": "Segment Title",
         "description": "Short description of the segment",
         "content": "Detailed paragraph about this aspect of the monument"
       }}
-    ]\n    IMPORTANT: Ensure valid JSON with proper escaping and maintain the specified duration in the content."""
+    ]\n    IMPORTANT: 
+    1. Ensure valid JSON with proper escaping
+    2. Maintain the specified duration in the content
+    3. For Fun Facts and Surprising Facts, each segment MUST be a standalone fact (not a description)
+    4. The first segment should NOT be a general description but should directly address the chosen topic focus
+    5. Make sure each fact is genuinely entertaining or surprising, not just informative"""
+
     try:
         response = model.generate_content(prompt)
         return extract_json(response.text)
@@ -76,12 +91,12 @@ def generate_monument_guide(location, duration, topic_focus, language):
             }
         ]
 
-def generate_audio(text, voice_selection, language):
+def generate_audio(text, language):
     """Generate audio from text using OpenAI TTS"""
     try:
         response = client.audio.speech.create(
             model="tts-1",
-            voice=voice_selection,
+            voice="alloy",
             input=text
         )
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as tmp_file:
@@ -135,21 +150,10 @@ def main():
     location = st.text_input("Enter a Monument, Art Gallery, or Historical Site", placeholder="E.g., Eiffel Tower, Louvre Museum, Taj Mahal")
     col1, col2 = st.columns(2)
 
-    # Voice mapping
-    voice_map = {
-        "Balanced and clear": "alloy",
-        "Warm and rounded": "echo",
-        "Authoritative": "fable",
-        "Deep and powerful": "onyx",
-        "Energetic and bright": "nova",
-        "Gentle and soothing": "shimmer"
-    }
-
     with col1:
         duration = st.selectbox(
             "Select Duration",
             ["Synopsis (10-30 secs)", "Story (30 secs - 2 mins)", "Long Story (2 mins- 5 mins)"],
-            format_func=lambda x: x.split(" ")[0]
         )
 
         topic_focus = st.selectbox(
@@ -158,17 +162,10 @@ def main():
         )
 
     with col2:
-        voice_description = st.selectbox(
-            "Select Voice",
-            list(voice_map.keys())
-        )
-
         language = st.selectbox(
             "Select Language",
             ["English", "Spanish", "French", "Hindi"]
         )
-
-    voice_selection = voice_map[voice_description]
 
     if st.button("Generate Guide"):
         if not location:
@@ -188,7 +185,7 @@ def main():
 
                     try:
                         audio_text = f"{guide.get('title')}. {guide.get('description')}. {guide.get('content')}"
-                        audio_bytes = generate_audio(audio_text, voice_selection, language)
+                        audio_bytes = generate_audio(audio_text, language)
                         st.markdown("**\U0001F50A Listen to Audio Guide:**")
                         st.markdown(create_audio_player(audio_bytes), unsafe_allow_html=True)
                     except Exception as e:
