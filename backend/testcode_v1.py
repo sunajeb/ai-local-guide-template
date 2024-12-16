@@ -151,9 +151,15 @@ def main():
     col1, col2 = st.columns(2)
 
     with col1:
+        duration_options = {
+            "Synopsis (10-30 secs)": "Synopsis",
+            "Story (30 secs - 2 mins)": "Story",
+            "Long Story (2-5 mins)": "Long"
+        }
+        
         duration = st.selectbox(
             "Select Duration",
-            ["Synopsis (10-30 secs)", "Story (30 secs - 2 mins)", "Long Story (2 mins- 5 mins)"],
+            list(duration_options.keys())
         )
 
         topic_focus = st.selectbox(
@@ -172,7 +178,8 @@ def main():
             st.warning("Please enter a monument location")
             return
 
-        duration_type = duration.split(" ")[0]
+        # Use the mapping to get the correct duration type
+        duration_type = duration_options[duration]
 
         with st.spinner('Generating monument guide...'):
             guides = generate_monument_guide(location, duration_type, topic_focus, language)
