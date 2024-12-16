@@ -2,9 +2,38 @@ import VideoThumb from "@/public/images/hero-image-01.jpg";
 import ModalVideo from "@/components/modal-video";
 
 export default function HeroHome() {
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleOpenApp = () => {
+    setIsLoading(true);
+    // Simulate a short delay for smooth UX
+    setTimeout(() => {
+      window.open("https://sunajeb.streamlit.app/", "_blank");
+      setIsLoading(false);
+    }, 1000);
+  };
+
+
   return (
 
     <section>
+       <h2>Try the App</h2>
+      <button
+        onClick={handleOpenApp}
+        className="btn bg-indigo-600 text-white py-2 px-4 rounded"
+      >
+        Open App
+      </button>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-900 bg-opacity-80 z-50">
+          <div className="text-white text-xl">Loading the app...</div>
+        </div>
+      )}
+
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* Hero content */}
         <div className="py-12 md:py-20">
@@ -65,7 +94,6 @@ export default function HeroHome() {
                 </div>
 
               <div style={{ marginTop: "2rem", textAlign: "center" }}>
-                <h2>Try the App</h2>
                 <a
                   href="https://sunajeb.streamlit.app/"
                   target="_blank"
