@@ -2,37 +2,8 @@ import VideoThumb from "@/public/images/hero-image-01.jpg";
 import ModalVideo from "@/components/modal-video";
 
 export default function HeroHome() {
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleOpenApp = () => {
-    setIsLoading(true);
-    // Simulate a short delay for smooth UX
-    setTimeout(() => {
-      window.open("https://sunajeb.streamlit.app/", "_blank");
-      setIsLoading(false);
-    }, 1000);
-  };
-
-
   return (
-
     <section>
-       <h2>Try the App</h2>
-      <button
-        onClick={handleOpenApp}
-        className="btn bg-indigo-600 text-white py-2 px-4 rounded"
-      >
-        Open App
-      </button>
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-900 bg-opacity-80 z-50">
-          <div className="text-white text-xl">Loading the app...</div>
-        </div>
-      )}
-
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* Hero content */}
@@ -78,21 +49,6 @@ export default function HeroHome() {
               </div>
             </div>
 
-                <div style={{ marginTop: "2rem" }}>
-                  <h2>Try the App</h2>
-                  <iframe
-                    src="https://sunajeb.streamlit.app/"
-                    width="100%"
-                    height="600px"
-                    style={{
-                      border: "none",
-                      overflow: "hidden",
-                    }}
-                  >
-                    Your browser does not support iframes.
-                  </iframe>
-                </div>
-
               <div style={{ marginTop: "2rem", textAlign: "center" }}>
                 <a
                   href="https://sunajeb.streamlit.app/"
@@ -100,7 +56,7 @@ export default function HeroHome() {
                   rel="noopener noreferrer"
                   className="btn group bg-indigo-600 text-white py-2 px-4 rounded"
                 >
-                  Open the App
+                  Try the App now!
                 </a>
               </div>
           </div>
