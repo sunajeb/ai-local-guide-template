@@ -204,7 +204,7 @@ def main():
 
         if guides:
             for i, guide in enumerate(guides, 1):
-                with st.expander(f"<span style='font-size: 20px;'>Segment {i}: {guide.get('title', 'Untitled')}</span>", unsafe_allow_html=True):
+                with st.expander(f"Segment {i}: {guide.get('title', 'Untitled')}"):
                     st.markdown(f"<div class='segment-content'>{guide.get('content', 'No content')}</div>", unsafe_allow_html=True)
 
                     try:
